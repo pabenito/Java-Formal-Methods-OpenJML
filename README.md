@@ -11,6 +11,7 @@ This project is about learning how to use OpenJML to verify Java programs. And s
 - Provide useful information
 - Simple practical example
 - Formal Methods concepts that OpenJML is based on
+- ¿What is OpenJML capable of? 
 - Be creative about what is posible
 
 
