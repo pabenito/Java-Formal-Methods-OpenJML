@@ -14,6 +14,8 @@ This project is about learning how to use OpenJML to verify Java programs. And s
 - ¿What is OpenJML capable of? 
 - Be creative about what is posible
 
+## Brain storming
 
-
+- Example & counterexample
+- Verify a done practice and ecourage other to write the annotations of pre-practice 
 
