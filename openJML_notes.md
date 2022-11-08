@@ -31,10 +31,9 @@ OpenJML support Deductive Verification (DV) and Runtime-assertion-checking (RAC)
 
 ### What is Deductive Verification?
 
-- Deductive verification is a static verification.
-- Each method is checked on its own, using the specifications (not the implementations) of the other methods.
-- Each method is checked on its own, using the specifications (not the implementations) of the other methods. 
-- Each method is checked on its own, using the specifications (not the implementations) of the other methods.
+  - The DV approach is akin to logically symbolically executing a method for every possible legal set of inputs (every possible pre-state). So when the method verifications are successful, the result is a more powerful statement of correctness than is testing/RAC
+  - Each method is checked on its own, using the specifications (not the implementations) of the other methods.
+  - This is a valid approach so long as, eventually, all methods verify successfully (and it can be proved that the program terminates)
 
 
 
