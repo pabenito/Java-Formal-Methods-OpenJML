@@ -1,12 +1,13 @@
 package RabbitHop;
 
 import Maude.Module;
+import Maude.Node;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class RabbitHop implements Module {
+public class RabbitHop implements Module, Node, Cloneable {
 
     public static char RIGHT_RABBIT = 'x';
     public static char LEFT_RABBIT = 'o';
@@ -18,7 +19,7 @@ public class RabbitHop implements Module {
 
     public RabbitHop(int rabbits){
         placeRabbits(rabbits);
-        trace = new ArrayList<>();
+        resetTrace();
     }
 
     private void placeRabbits(int rabbits) {
@@ -30,6 +31,10 @@ public class RabbitHop implements Module {
         for(int i = rabbits + 1; i <= rabbits * 2; i++){
             rabbitList.add(Rabbit.LEFT);
         }
+    }
+
+    private void resetTrace() {
+        trace = new ArrayList<>();
     }
 
     // Query
@@ -143,16 +148,11 @@ public class RabbitHop implements Module {
                 rabbit.toString(), from, oper, to, preState, oper, this));
     }
 
-    @Override
-    public void printTrace(){
-        for(String action : this.trace)
-            System.out.println(action);
-    }
-
     // Maude
 
     @Override
     public void rewrite() {
+        resetTrace();
         Integer rabbit;
         while ((rabbit = anyWhoCanMove()) != null)
             move(rabbit);
@@ -160,10 +160,41 @@ public class RabbitHop implements Module {
 
     @Override
     public void fairRewrite(Random random) {
+        resetTrace();
         this.random = random;
         Integer rabbit;
         while ((rabbit = anyWhoCanMoveRandom()) != null)
             move(rabbit);
+    }
+
+    @Override
+    public List<Node> searchFinalStates() {
+        List<Node> finalStates = new ArrayList<>();
+        for(Node child : next()){
+            RabbitHop childRabbitHop = (RabbitHop) child;
+            finalStates.addAll(childRabbitHop.searchFinalStates());
+        }
+        if(finalStates.isEmpty() && isFinalState())
+            finalStates.add(this);
+        return finalStates;
+    }
+
+    private boolean isFinalState() {
+        for(int i = 0; i < rabbitList.size() / 2; i++){
+            if (rabbitList.get(i) == Rabbit.RIGHT)
+                return false;
+        }
+        for(int i = rabbitList.size() / 2 + 1; i < rabbitList.size(); i++){
+            if (rabbitList.get(i) == Rabbit.LEFT)
+                return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void printTrace(){
+        for(String action : this.trace)
+            System.out.println(action);
     }
 
     private Integer anyWhoCanMove() {
@@ -201,5 +232,40 @@ public class RabbitHop implements Module {
         Object o = list.get(a);
         list.set(a, list.get(b));
         list.set(b, o);
+    }
+
+    // Node
+
+    private RabbitHop(List<Rabbit> rabbitList, List<String> trace){
+        this.rabbitList = rabbitList;
+        this.trace = trace;
+    }
+
+    @Override
+    public RabbitHop clone(){
+        return new RabbitHop(new ArrayList<>(rabbitList), new ArrayList<>(trace));
+    }
+
+    @Override
+    public boolean hasNext() {
+        return anyWhoCanMove() != null;
+    }
+
+    @Override
+    public List<Node> next() {
+        List<Node> childs = new ArrayList<>();
+        for (int i = 0; i < rabbitList.size(); i++){
+            if(canAdvance(i)){
+                RabbitHop clone = clone();
+                clone.advance(i);
+                childs.add(clone);
+            }
+            if(canHop(i)){
+                RabbitHop clone = clone();
+                clone.hop(i);
+                childs.add(clone);
+            }
+        }
+        return childs;
     }
 }

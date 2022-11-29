@@ -1,5 +1,6 @@
 package Maude;
 
+import java.util.List;
 import java.util.Random;
 
 public interface Module {
@@ -7,4 +8,6 @@ public interface Module {
     void fairRewrite(Random random);
 
     void printTrace();
+
+    List<Node> searchFinalStates();
 }
