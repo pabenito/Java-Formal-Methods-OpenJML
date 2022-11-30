@@ -1,59 +1,72 @@
-import Maude.Node;
-import RabbitHop.RabbitHop;
 import Maude.Module;
-
+import RabbitHop.RabbitHop;
 import java.util.List;
 import java.util.Random;
 
 public class Main {
-
     public static void main(String[] args) {
         Module rabbitHop = new RabbitHop(3);
-        //fairRewrite(rabbitHop);
-        search(rabbitHop, "ooo_xxx");
-        //searchBlockStates(rabbitHop);
-        //testNext("xx_o_ox_");
+        System.out.printf("Rewrite:\n\n");
+        rewrite(rabbitHop.clone());
+        System.out.printf("\nFair Rewrite:\n\n");
+        fairRewrite(rabbitHop.clone());
+        System.out.printf("\nTest Next:\n\n");
+        testNext("xx_o_ox_");
+        System.out.printf("\nSearch:\n\n");
+        search(rabbitHop.clone(), "ooo_xxx");
+        System.out.printf("\nSearch Block States:\n\n");
+        searchBlockStates(new RabbitHop(2));
     }
 
-    private static void fairRewrite(Module module){
-        System.out.println(module);
-        module.fairRewrite(new Random(System.currentTimeMillis()));
-        System.out.println(module);
+    public static void rewrite(Module module){
+        String initialState = module.toString();
+        module.rewrite();
+        System.out.printf("%s ---> %s\n\n", initialState, module);
         module.printTrace();
     }
 
-    private static void search(Module initialState, String pattern) {
-        List<Node> states = initialState.search(pattern);
+    public static void fairRewrite(Module module){
+        String initialState = module.toString();
+        module.fairRewrite(new Random(System.currentTimeMillis()));
+        System.out.printf("%s ---> %s\n\n", initialState, module);
+        module.printTrace();
+    }
+
+    public static void search(Module initialState, String pattern) {
+        List<Module> states = initialState.search(pattern);
+
         System.out.printf("Paths from %s to %s: %d\n\n",initialState, pattern, states.size());
         System.out.println(states);
-        for (Node node : states){
+
+        for (Module state : states){
             System.out.println();
-            RabbitHop state = (RabbitHop) node;
             System.out.printf("Result: %s ---> %s\n", initialState, state);
             state.printTrace();
         }
     }
 
-    private static void searchBlockStates(Module initialState) {
-        List<Node> finalStates = initialState.searchBlockStates();
+    public static void searchBlockStates(Module initialState) {
+        List<Module> finalStates = initialState.searchBlockStates();
+
         System.out.printf("Final states paths: %d\n\n", finalStates.size());
         System.out.println(finalStates);
-        for (Node node : finalStates){
+
+        for (Module finalState : finalStates){
             System.out.println();
-            RabbitHop finalState = (RabbitHop) node;
             System.out.printf("Result: %s ---> %s\n", initialState, finalState);
             finalState.printTrace();
         }
     }
 
-    private static void testNext(String rabbitHopRepresentation){
-        RabbitHop initialState = new RabbitHop(rabbitHopRepresentation);
-        List<Node> nextStates = initialState.next();
+    public static void testNext(String rabbitHopRepresentation){
+        Module initialState = new RabbitHop(rabbitHopRepresentation);
+        List<Module> nextStates = initialState.next();
+
         System.out.printf("Initial state: %s\n\n", initialState);
         System.out.printf("Next states:\n%s\n", nextStates);
-        for (Node node : nextStates){
+
+        for (Module nextState : nextStates){
             System.out.println();
-            RabbitHop nextState = (RabbitHop) node;
             System.out.printf("Result: %s ---> %s\n", initialState, nextState);
             nextState.printTrace();
         }
