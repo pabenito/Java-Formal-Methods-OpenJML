@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 public class Main {
+    private final static String TARGET_STATE = "ooo_xxx";
     public static void main(String[] args) {
         Module rabbitHop = new RabbitHop(3);
         System.out.printf("Rewrite:\n\n");
@@ -13,9 +14,9 @@ public class Main {
         System.out.printf("\nTest Next:\n\n");
         testNext("xx_o_ox_");
         System.out.printf("\nSearch:\n\n");
-        search(rabbitHop.clone(), "ooo_xxx");
+        search(rabbitHop.clone(), TARGET_STATE);
         System.out.printf("\nSearch Block States:\n\n");
-        searchBlockStates(new RabbitHop(2));
+        searchBlockStates(new RabbitHop(2)); // With RabbitHop(2) because RabbitHop(3) gives too many states
     }
 
     public static void rewrite(Module module){
@@ -48,7 +49,7 @@ public class Main {
     public static void searchBlockStates(Module initialState) {
         List<Module> finalStates = initialState.searchBlockStates();
 
-        System.out.printf("Final states paths: %d\n\n", finalStates.size());
+        System.out.printf("Block states from %s: %d\n\n", initialState, finalStates.size());
         System.out.println(finalStates);
 
         for (Module finalState : finalStates){

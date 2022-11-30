@@ -210,7 +210,6 @@ public class RabbitHop extends Module{
         for(int i = 0; i < size; i++){
             swap(random.nextInt(size), random.nextInt(size), indexList);
         }
-        addTrace(String.format("Random indexes: %s", indexList));
         return indexList;
     }
 
@@ -230,8 +229,6 @@ public class RabbitHop extends Module{
         super(trace);
         this.rabbitList = rabbitList;
     }
-
-
 
     @Override
     public List<Module> next() {
