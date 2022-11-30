@@ -3,21 +3,28 @@ package RabbitHop;
 import Maude.Module;
 import Maude.Node;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 public class RabbitHop implements Module, Node, Cloneable {
 
-    public static char RIGHT_RABBIT = 'x';
-    public static char LEFT_RABBIT = 'o';
-    public static char SPACE = '_';
+    public final static char RIGHT_RABBIT = 'x';
+    public final static char LEFT_RABBIT = 'o';
+    public final char SPACE = '_';
     private List<Rabbit> rabbitList;
 
     private List<String> trace;
     private Random random;
 
     public RabbitHop(int rabbits){
+        placeRabbits(rabbits);
+        resetTrace();
+    }
+
+    public RabbitHop(String rabbits){
         placeRabbits(rabbits);
         resetTrace();
     }
@@ -30,6 +37,21 @@ public class RabbitHop implements Module, Node, Cloneable {
         rabbitList.add(Rabbit.SPACE);
         for(int i = rabbits + 1; i <= rabbits * 2; i++){
             rabbitList.add(Rabbit.LEFT);
+        }
+    }
+
+    private void placeRabbits(String rabbits) {
+        rabbitList = new ArrayList<>(rabbits.length());
+        for(char rabbit : rabbits.toCharArray())
+            rabbitList.add(charToRabbit(rabbit));
+    }
+
+    private Rabbit charToRabbit(char rabbit) {
+        switch (rabbit){
+            case RIGHT_RABBIT: return Rabbit.RIGHT;
+            case LEFT_RABBIT: return Rabbit.LEFT;
+            case SPACE: return Rabbit.SPACE;
+            default: throw new InvalidParameterException(String.format("Unexpected rabbit representation: %s", rabbit));
         }
     }
 
@@ -168,15 +190,37 @@ public class RabbitHop implements Module, Node, Cloneable {
     }
 
     @Override
-    public List<Node> searchFinalStates() {
+    public List<Node> search(String pattern) {
+        List<Node> states = new ArrayList<>();
+        for (Node child : next()) {
+            RabbitHop childRabbitHop = (RabbitHop) child;
+            states.addAll(childRabbitHop.search(pattern));
+        }
+        if (match(pattern))
+            states.add(this);
+        return states;
+    }
+
+    @Override
+    public List<Node> searchBlockStates() {
         List<Node> finalStates = new ArrayList<>();
         for(Node child : next()){
             RabbitHop childRabbitHop = (RabbitHop) child;
-            finalStates.addAll(childRabbitHop.searchFinalStates());
+            finalStates.addAll(childRabbitHop.searchBlockStates());
         }
-        if(finalStates.isEmpty() && isFinalState())
+        if(finalStates.isEmpty())
             finalStates.add(this);
         return finalStates;
+    }
+
+    @Override
+    public void printTrace(){
+        for(String action : this.trace)
+            System.out.println(action);
+    }
+
+    private boolean match(String pattern) {
+        return Pattern.matches(pattern, this.toString());
     }
 
     private boolean isFinalState() {
@@ -189,12 +233,6 @@ public class RabbitHop implements Module, Node, Cloneable {
                 return false;
         }
         return true;
-    }
-
-    @Override
-    public void printTrace(){
-        for(String action : this.trace)
-            System.out.println(action);
     }
 
     private Integer anyWhoCanMove() {

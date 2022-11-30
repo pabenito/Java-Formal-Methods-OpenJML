@@ -9,5 +9,7 @@ public interface Module {
 
     void printTrace();
 
-    List<Node> searchFinalStates();
+    List<Node> search(String pattern);
+
+    List<Node> searchBlockStates();
 }
