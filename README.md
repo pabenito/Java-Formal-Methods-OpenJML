@@ -17,10 +17,4 @@ This project is about learning how to use OpenJML to verify Java programs. And s
 ## Brain storming
 
 - Example & counterexample
-- Verify a done practice and ecourage other to write the annotations of pre-practice 
-
-## Preguntar:
-- Si se tienen que parecer a las transparencias de otros años
-- ¿Hay que nombrar todo lo principal?
-- ¿Hay que centrarse en algo especifico?
-- ¿Hay que hacer un ejemplo practico?
+- Verify a done practice and ecourage other to write the annotations of pre-practice
