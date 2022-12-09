@@ -94,8 +94,12 @@ public class RabbitHop extends Module{
         String preState = this.toString();
         Integer to = null;
         switch (rabbitList.get(rabbit)){
-            case RIGHT -> to = rabbit + 1;
-            case LEFT -> to = rabbit - 1;
+            case RIGHT:
+                to = rabbit + 1;
+                break;
+            case LEFT:
+                to = rabbit - 1;
+                break;
         }
         swap(rabbit, to);
         addTrace("advance", rabbitList.get(to), rabbit, to, preState);
@@ -107,8 +111,12 @@ public class RabbitHop extends Module{
         String preState = this.toString();
         Integer to = null;
         switch (rabbitList.get(rabbit)){
-            case RIGHT -> to = rabbit + 2;
-            case LEFT -> to = rabbit - 2;
+            case RIGHT:
+                to = rabbit + 2;
+                break;
+            case LEFT:
+                to = rabbit - 2;
+                break;
         }
         swap(rabbit, to);
         addTrace("hop", rabbitList.get(to), rabbit, to, preState);
