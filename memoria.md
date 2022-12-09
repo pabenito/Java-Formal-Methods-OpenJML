@@ -15,7 +15,7 @@ Hemos definido una clase abstracta _Module_, de la cual pueda heredar una clase 
 
 ### Rewrite 
 
-Dado que cada módulo tiene reglas específicas, hemos tenido que definir esta como método abstracto y que cada módulo implemente este, aplicando tantas regas como sean posibles. 
+Dado que cada módulo tiene reglas específicas, hemos tenido que definir esta como método abstracto y que cada módulo implemente este, aplicando tantas reglas como sean posibles. 
 
 ### FairRewrite
 
@@ -87,27 +87,126 @@ Este método hace que un conejo determinado (pasado como argumento en forma de n
 
 ## Ejecución 
 
-INCLUIR MAIN 
----
-    public static void main(String[] args) {
-        Module rabbitHop = new RabbitHop(3);
-        System.out.printf("Rewrite:\n\n");
-        rewrite(rabbitHop.clone());
-        System.out.printf("\nFair Rewrite:\n\n");
-        fairRewrite(rabbitHop.clone());
-        System.out.printf("\nTest Next:\n\n");
-        testNext("xx_o_ox_");
-        System.out.printf("\nSearch:\n\n");
-        search(rabbitHop.clone(), TARGET_STATE);
-        System.out.printf("\nSearch Block States:\n\n");
-        searchBlockStates(new RabbitHop(2)); // With RabbitHop(2) because RabbitHop(3) gives too many states
-    }
----
+Para probar si funciona lo realizado anteriormente, hemos realizado el siguiente ejemplo:
+
+~~~
+public static void main(String[] args) {
+    Module rabbitHop = new RabbitHop(3);
+    System.out.printf("Rewrite:\n\n");
+    rewrite(rabbitHop.clone());
+    System.out.printf("\nFair Rewrite:\n\n");
+    fairRewrite(rabbitHop.clone());
+    System.out.printf("\nTest Next:\n\n");
+    testNext("xx_o_ox_");
+    System.out.printf("\nSearch:\n\n");
+    search(rabbitHop.clone(), TARGET_STATE);
+    System.out.printf("\nSearch Block States:\n\n");
+    searchBlockStates(new RabbitHop(2)); // With RabbitHop(2) because RabbitHop(3) gives too many states
+}
+~~~
+
+Los métodos que se llaman en este main, están definidos en la propia clase, los cuales lo único que hacen es llamar al respectivo método del objeto rabbitHop que se le pasa por argumento y organizar el texto mejor para mostrarlo por consola. Por ejemplo, para el `rewrite`:
+
+~~~
+public static void rewrite(Module module){
+    String initialState = module.toString();
+    module.rewrite();
+    System.out.printf("%s ---> %s\n\n", initialState, module);
+     module.printTrace();
+}
+~~~
+
+~~~
+xxx_ooobruh ---> _xxxooo
+
+RIGHT rabbit at 1 hop to 3:
+	xxx_ooo ---[hop]---> x_xxooo
+RIGHT rabbit at 0 advance to 1:
+	x_xxooo ---[advance]---> _xxxooo
+~~~
 
 ## Análisis 
 
-RAZONAR CONFLUENCIA, TERMINACION Y COHERENCIA
+Antes de empezar, hay que tener en cuenta que con reglas nos referimos a los métodos que definen las posibles acciones que pueden realizar los conejos (por ejemplo, `advance`, que realiza la operación de avanzar), y con operaciones nos referimos a los métodos que nos devuelven algo (por ejemplo, `canAdvance`, que nos devuelve true o false dependiendo de si el conejo puede avanzar o no).
 
-## Conceptos Teoría 
+Un conjunto de ecuaciones es `confluente` si estas se pueden reescribir de todas las maneras posibles llegando siempre al mismo resultado.
 
-DESARROLLAR: Logica de reescritura con reglas, etc. LO QUE SE TE OCURRA
+    Para empezar, las reglas no son confluentes, ya que si alteras el orden de los conejos, cambian las posibles acciones que pueden realizar. Las operaciones sí son confluentes, ya que todas reciben un solo argumento, y es un número que representa la id del conejo, por lo que no es posible cambiar la forma de este.
+
+    Dicho esto, si se inicializa el objeto RabbitHop usando el constructor al que se le pasa un número, como solo se le pasa un argumento, no hay más formas que no sea el propio número, por tanto, este constructor sí es confluente. Sin embargo, si se usa el constructor al que se le pasa una cadena de caracteres, como el orden de los caracteres (los cuales representan a los conejos y los huecos) se puede alterar y es significativo, es decir, que el resultado final puede alterar dependiendo del estado inicial, no es confluente.
+
+Es `terminante` si la expresión de entrada de la ecuación no se puede simplificar infinitamente, es decir, se llega a un valor en el que la solución no es recursiva.
+
+    Teniendo esto en cuenta, las reglas sí son terminantes, ya que no son recursivas y no es posible reducir la entrada que se le pasa.
+
+    En el caso de las operaciones ocurre lo mismo que con las reglas, que no son recursivas y no es posible reducir la entrada que se le pasa, y por tanto, son terminantes.
+
+Una especificación es `coherente` si en alguna ecuación se toma como parámetro una expresión con una regla de reescritura aplicada y el resultado de esta es el mismo que si se hubiera resuelto la ecuación con esa misma expresión pero sin aplicar la regla de reescritura anterior.
+
+    En este caso, tal y como dice dice la definición, las especificaciones son coherentes ya que tras aplicar cualquier regla de reescritura, desde ese estado alcanzamos el mismo resultado.
+
+## Conceptos Teoría
+
+### Logica de reescritura con reglas
+
+Tal y como hemos mencionado antes, el conjunto de reglas no es confluente (en este caso, sí es terminante), por lo que al hacer una reescritura (rewrite) me dará uno de los posibles caminos a seguir. Maude es un lenguaje determinista, por lo que siempre dará la misma ejecución.
+
+Esto hay que simularlo en Java, de tal manera que cada vez que se tendria que usar rewrite, que siempre de la misma salida. Esto lo hemos realizado con el método `rewrite` de la clase Module, ya que la clase va a heredar de esta, teniendo que implementar este método. En nuestro caso, para la clase RabbitHop, la implementación es la siguiente:
+
+~~~
+@Override
+public void rewrite() {
+    Integer rabbit;
+    while ((rabbit = anyWhoCanMove()) != null)
+        move(rabbit);
+}
+~~~
+
+El método auxiliar `anyWhoCanMove` devuelve el primer conejo de izquierda a derecha que se pueda mover. Viendo esta implementación, cualquier objeto creado que llame a este método va a dar siempre el mismo resultado, da igual cuantas veces lo ejecute.
+Esto lo podemos ver por ejemplo en la siguiente ejecución:
+
+~~~
+public static void main(String[] args) {
+    Module rabbitHop = new RabbitHop(3);
+        
+    System.out.printf("Rewrite:\n\n");
+    rewrite(rabbitHop.clone());
+        
+    System.out.printf("\nSecond Rewrite:\n\n");
+    rewrite(rabbitHop.clone());
+}
+~~~
+~~~
+Rewrite:
+
+xxx_ooo ---> _xxxooo
+
+RIGHT rabbit at 1 hop to 3:
+	xxx_ooo ---[hop]---> x_xxooo
+RIGHT rabbit at 0 advance to 1:
+	x_xxooo ---[advance]---> _xxxooo
+
+Second Rewrite:
+
+xxx_ooo ---> _xxxooo
+
+RIGHT rabbit at 1 hop to 3:
+	xxx_ooo ---[hop]---> x_xxooo
+RIGHT rabbit at 0 advance to 1:
+	x_xxooo ---[advance]---> _xxxooo
+~~~
+
+## OpenJML
+
+OpenJML es una herramienta de verificación de programas Java que nos permite comprobar las especificaciones de programas anotados en JML.
+
+### Sintaxis
+
+Para definir una especificación, se debe usando comentarios de Java, ya sea usando // para una línea, o /* */ para un bloque.
+Además, antes de la especificación es necesario escribir @ para que se identifique como una especificación, quedando de la forma //@ o /*@ */.
+
+Sin entrar casi nada en detalle, las dos más etiquetas básicas son las siguientes:
+
+- @ requires _: se asume inicialmente la condición que se escriba (donde _). Es equivalente a la precondición.
+
+- @ ensures _: se garantiza al final de la ejecución la condición que se escriba (donde _). Es equivalente a la postcondición.
