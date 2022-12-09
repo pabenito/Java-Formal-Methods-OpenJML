@@ -51,11 +51,58 @@ De esta forma tras cualquier llamda a un comando de _Module_ podemos llamar a `p
 
 ## Rabbit Hop
 
-EXPLICAR COMO SE HA IMPLEMENTADO, QUE OPERACIONES HAY Y QUE DIFERENCIA HAY CON RESPECTO A LA IMPLEMENTACION EN MAUDE (MAS COMPLICADO QUE MAUDE)
+Rabbit Hop se ha implementado comparándolo a su implementación con maude. En la implementación de Maude, el módulo RabbitHop importa junto a las listas predefinidas, una vista que usa el módulo funcional Rabbit, pudiendo definir List{RabbitView}. En comparación a esa implementación, la clase RabbitHop de Java importa la clase (en realidad, es una enumeración) Rabbit y las clases para poder usar listas, de tal manera que se puede definir un atributo `List<Rabbit>`. Para cubrir las operaciones que se realizan en maude, hacemos que la clase RabbitHop herede de Module, definida anteriormente, siendo el constructor una llamada a `super()` y la inicialización del resto de atributos. Además, se tienen que redefinir varios métodos implementados en la clase de la que hereda. Por tanto, debido a todo esto, se puede considerar que esta implementación es capaz de llegar a ser más complicada que la de Maude, junto a que hay que implementar las operaciones y reglas a continuación.
+
+### _placeRabbits_
+
+Es un método privado que se llama en el constructor para inicializar los atributos de la clase RabbitHop. El constructor puede recibir dos argumentos como entrada, un número que representa el número de conejos 'x' y conejos 'o' que hay, es decir, si n=3, el estado inicial será `xxx_ooo`; y la cadena de conejos directamente, es decir, que la entrada sea por ejemplo `xxx_ooo`. Debido a esto, hay dos funciones definidas para este método, las cuales reciben su correspondiente argumento desde el constructor.
+
+### _checkRabbitInList_
+
+Un método privado para comprobar si el id de un conejo (pasado como argumento) está dentro de `rabbitList`. En caso de que no esté, se lanza una excepción.
+
+### _canAdvance_
+
+Este método nos dice si un conejo determinado (pasado como argumento en forma de numero entero, representando el id del conejo) es capaz de avanzar. Lo primero que se hace es llamar a `checkRabbitInList()`. En caso de que sea correcto, se comprueba que tipo de conejo es y si puede avanzar o no, siendo esto el resultado que devuelve el método.
+
+### _canHope_
+
+Este método nos dice si un conejo determinado (pasado como argumento en forma de numero entero, representando el id del conejo) es capaz de saltar. Lo primero que se hace es llamar a `checkRabbitInList()`. En caso de que sea correcto, se comprueba que tipo de conejo es y si puede saltar o no, siendo esto el resultado que devuelve el método.
+
+### _canMove_
+
+Este método nos dice si un conejo determinado (pasado como argumento en forma de numero entero, representando el id del conejo) es capaz de moversere, ya sea avanzando o saltando. Comprueba si puede avanzar o si puede saltar, usando los dos métodos anteriores. En caso de que sea pueda hacer al menos una de las dos acciones, devuelve true.
+
+### _advance_
+
+Este método realiza la acción de avanzar de un conejo determinado (pasado como argumento en forma de numero entero, representando el id del conejo). Lo primero que se hace es comprobar si realmente puede avanzar mediante `canAdvance`, y en caso contrario, se lanza una excepción. Una vez comprobado que se puede avanzar, se comprueba que tipo de conejo es y se realiza la acción de avanzar.
+
+### _hop_
+
+Este método realiza la acción de saltar de un conejo determinado (pasado como argumento en forma de numero entero, representando el id del conejo). Lo primero que se hace es comprobar si realmente puede avanzar mediante `canHope`, y en caso contrario, se lanza una excepción. Una vez comprobado que se puede saltar, se comprueba que tipo de conejo es y se realiza la acción de saltar.
+
+### _move_
+
+Este método hace que un conejo determinado (pasado como argumento en forma de numero entero, representando el id del conejo) se mueva en caso de que sea capaz de moversere, ya sea avanzando o saltando. Primero Comprueba si puede avanzar, y en caso de que pueda, avanza, acabando ahí el método. En caso de que no pueda avanzar, se comprueba si puede saltar, y en caso de que pueda, este salta. En casao de que no pueda realizar ninguna de las dos acciones, se lanza una expeción.
 
 ## Ejecución 
 
 INCLUIR MAIN 
+---
+    public static void main(String[] args) {
+        Module rabbitHop = new RabbitHop(3);
+        System.out.printf("Rewrite:\n\n");
+        rewrite(rabbitHop.clone());
+        System.out.printf("\nFair Rewrite:\n\n");
+        fairRewrite(rabbitHop.clone());
+        System.out.printf("\nTest Next:\n\n");
+        testNext("xx_o_ox_");
+        System.out.printf("\nSearch:\n\n");
+        search(rabbitHop.clone(), TARGET_STATE);
+        System.out.printf("\nSearch Block States:\n\n");
+        searchBlockStates(new RabbitHop(2)); // With RabbitHop(2) because RabbitHop(3) gives too many states
+    }
+---
 
 ## Análisis 
 
